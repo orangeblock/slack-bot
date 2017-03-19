@@ -3,8 +3,10 @@ import requests
 import logging
 
 from base import BaseBot
+from HTMLParser import HTMLParser
 
 logger = logging.getLogger(__name__)
+html_parser = HTMLParser()
 
 CHUCK_API_URL = 'http://api.icndb.com'
 CHUCK_REGEX = re.compile(r'^!chuck')
@@ -12,7 +14,7 @@ CHUCK_REGEX = re.compile(r'^!chuck')
 def random_chuck_fact():
     try:
         fact = requests.get('%s/jokes/random' % CHUCK_API_URL.rstrip('/')).json()
-        return fact['value']['joke']
+        return html_parser.unescape(fact['value']['joke'])
     except Exception as e:
         logger.info('Error while retrieving Chuck Norris facts: %s' % e)
         return None

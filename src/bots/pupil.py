@@ -72,5 +72,5 @@ class PupilBot(BaseBot):
             answer = self._find_answer(message.text.replace(self._get_mention_string(), ''))
             if answer:
                 self.connection.send_message(answer, message.channel)
-            return True
+                return True
         return False

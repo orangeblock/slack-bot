@@ -6,6 +6,7 @@ from base import BaseBot
 logger = logging.getLogger(__name__)
 
 TEACH_REGEX = re.compile(r'^!teach\s+"([^\n"]+)"\s*"([^\n"]+)"')
+FORGET_REGEX = re.compile(r'^!forget')
 HELP_REGEX = re.compile(r'^!teach\s+help')
 
 class PupilBot(BaseBot):
@@ -17,10 +18,14 @@ class PupilBot(BaseBot):
     def help_message(self):
         return """I can store question/answer pairs and repeat the answer when asked a question!\n""" + \
                """`!teach \"<string>\" \"<string>\"` to teach me something new!\n""" + \
+               """`!forget` and I will forget everything.\n""" + \
                """`@%s <string>` and I will answer if I can!""" % self.connection.bot_name
 
     def handle(self, message):
-        return self.help(message) or self.learn(message) or self.answer(message)
+        return self.help(message) or \
+               self.learn(message) or \
+               self.answer(message) or \
+               self.forget(message)
 
     def _find_answer(self, question):
         storable_question = self._get_storable_question(question)
@@ -52,6 +57,13 @@ class PupilBot(BaseBot):
             self.qa.append((self._get_storable_question(question), answer))
             response += 'Got it! I will now respond to "%s" with "%s"! :ok_hand:' % (question, answer)
             self.connection.send_message(response, message.channel)
+            return True
+        return False
+
+    def forget(self, message):
+        if re.match(FORGET_REGEX, message.text):
+            self.qa = []
+            self.connection.send_message("Forgot everything!", message.channel)
             return True
         return False
 

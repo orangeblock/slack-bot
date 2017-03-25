@@ -1,10 +1,13 @@
 import os
 import bots
+import time
 import logging
 import threading
 import connections
 
 logger = logging.getLogger(__name__)
+
+WAIT_DURATION = 60
 
 def _run_handle_loop(connection, bots):
     for message in connection.new_messages():
@@ -16,16 +19,28 @@ def _run_handle_loop(connection, bots):
 def run_slack_connection():
     slack_token = os.getenv("SLACK_TOKEN")
     if slack_token:
-        connection = connections.SlackConnection(slack_token)
-        bot_list = [bots.PupilBot(connection), bots.ChuckBot(connection), bots.MemeBot(connection)]
-        _run_handle_loop(connection, bot_list)
+        while True:
+            connection = connections.SlackConnection(slack_token)
+            bot_list = [bots.PupilBot(connection), bots.ChuckBot(connection), bots.MemeBot(connection)]
+            try:
+                _run_handle_loop(connection, bot_list)
+            except Exception as e:
+                logger.info("Slack error; waiting and retrying: %s" % e)
+                connection.close()
+            time.sleep(WAIT_DURATION)
     else:
         logger.info("SLACK_TOKEN env var not set. Exiting...")
 
 def run_socketio_conenction():
-    connection = connections.CustomChatConnection()
-    bot_list = [bots.ChuckBot(connection), bots.MemeBot(connection)]
-    _run_handle_loop(connection, bot_list)
+    while True:
+        connection = connections.CustomChatConnection()
+        bot_list = [bots.ChuckBot(connection), bots.MemeBot(connection)]
+        try:
+            _run_handle_loop(connection, bot_list)
+        except Exception as e:
+            logger.info("Socket.io error; waiting and retrying: %s" % e)
+            connection.close()
+        time.sleep(WAIT_DURATION)
 
 
 if __name__ == '__main__':

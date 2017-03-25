@@ -97,6 +97,12 @@ class SlackConnection(object):
         logger.debug('Sending message in channel %s' % channel)
         self._ws_send(json.dumps(data))
 
+    def close(self):
+        try:
+            self.websocket.close()
+        except Exception as e:
+            logger.info("Slack connection close failed: %s" % e)
+
 
 class SlackConnectError(Exception):
     pass
@@ -148,3 +154,9 @@ class CustomChatConnection(object):
         }
         logger.debug('Sending message to socket.io')
         self.socket.emit('chat message', data)
+
+    def close(self):
+        try:
+            self.socket.disconnect()
+        except Exception as e:
+            logger.info("Socket.io connection close failed: %s" % e)

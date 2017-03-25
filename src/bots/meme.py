@@ -40,10 +40,10 @@ class MemeBot(BaseBot):
         return False
 
     def handle(self, message):
-        if message.channel[0] not in self.allowed_chans:
+        if message.channel and message.channel[0] not in self.allowed_chans:
             return False
         if re.match(MEME_REGEX, message.text):
-            if message.channel[0] == 'G' and self._is_too_soon(message.channel):
+            if message.channel and message.channel[0] == 'G' and self._is_too_soon(message.channel):
                 self.connection.send_message('You have to wait %d seconds :simple_smile:' % self.delay, message.channel)
                 return True
             meme_url = random_meme()
@@ -52,7 +52,7 @@ class MemeBot(BaseBot):
             else:
                 response = meme_url
             self.connection.send_message(response, message.channel)
-            if message.channel[0] == 'G':
+            if message.channel and message.channel[0] == 'G':
                 self.ts_last_sent[message.channel] = time.time()
             return True
         return False

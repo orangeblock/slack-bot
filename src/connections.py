@@ -1,15 +1,23 @@
 import time
 import json
+import Queue
 import logging
 import requests
 import websocket
 
 from ssl import SSLWantReadError, SSLError
+from message import Message
+from socketIO_client import SocketIO
 from util import generate_counter
 
 logger = logging.getLogger(__name__)
 SLACK_API_BASE = 'https://slack.com/api'
 RTM_START_URL = '%s/rtm.start' % SLACK_API_BASE
+
+HOO_URL = 'https://hoo-pyjqxtdink.now.sh'
+BOT_ID = 'aagA4CyNCHtD6cxgKNJHb8Wq'
+DEFAULT_NAME = 'awesomebot'
+
 
 class SlackConnection(object):
     def __init__(self, oauth_token, read_delay=.2):
@@ -73,7 +81,7 @@ class SlackConnection(object):
                     timestamp = None
                 if obj.get('type') == 'message' and timestamp > self.conn_data['_ts_connected']:
                     logger.debug('Received new message: %s' % obj)
-                    yield SlackMessage(text=obj['text'], channel=obj['channel'], user=obj['user'], ts=timestamp)
+                    yield Message(text=obj['text'], channel=obj['channel'], user=obj['user'], ts=timestamp)
             except KeyError as ke:
                 logger.debug('Message missing some parameters: %s' % ke)
             except TypeError as te:
@@ -89,22 +97,54 @@ class SlackConnection(object):
         logger.debug('Sending message in channel %s' % channel)
         self._ws_send(json.dumps(data))
 
-class SlackMessage:
-    def __init__(self, text=None, channel=None, user=None, ts=None):
-        self.text = text
-        self.channel = channel
-        self.user = user
-        self.ts = ts
-
-    def __str__(self):
-        return json.dumps({
-            'text': self.text, 
-            'channel': self.channel, 
-            'user': self.user,
-            'timestamp': self.ts}, indent=2)
-
-    def __repr__(self):
-        return self.__str__()
 
 class SlackConnectError(Exception):
     pass
+
+
+class CustomChatConnection(object):
+    def __init__(self, block_delay=.2, username=None):
+        self.socket = None
+        self.message_q = Queue.Queue()
+        self.block_delay = block_delay
+        self.bot_name = username or DEFAULT_NAME
+        self._connect()
+
+    def _connect(self):
+        self.socket = SocketIO(HOO_URL)
+        logger.info('Socket IO connection successful')
+        self._setup_callbacks()
+
+    def _setup_callbacks(self):
+        self.socket.on('chat message', self._handle_message)
+
+    def _handle_message(self, data):
+        try:
+            if data['id'] != BOT_ID:
+                self.message_q.put(data)
+        except KeyError as ke:
+            logger.debug('Message does not contain some fields: %s' % ke)
+
+    def _message_stream(self):
+        while True:
+            self.socket.wait(self.block_delay)
+            try:
+                yield self.message_q.get(block=False)
+            except Queue.Empty:
+                pass
+
+    def new_messages(self):
+        for message in self._message_stream():
+            try:
+                yield Message(text=message['text'], user=message['id'])
+            except KeyError as ke:
+                logger.debug('Message missing some parameters: %s' % ke)
+
+    def send_message(self, message, channel):
+        data = {
+            'text': message,
+            'username': self.bot_name,
+            'id': BOT_ID
+        }
+        logger.debug('Sending message to socket.io')
+        self.socket.emit('chat message', data)

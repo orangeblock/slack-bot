@@ -20,7 +20,7 @@ def random_chuck_fact():
         return None
 
 class ChuckBot(BaseBot):
-    def __init__(self, connection):
+    def __init__(self, connection=None):
         super(ChuckBot, self).__init__(connection)
 
     def handle(self, message):

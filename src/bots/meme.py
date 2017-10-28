@@ -26,7 +26,7 @@ def random_meme():
         return None
 
 class MemeBot(BaseBot):
-    def __init__(self, connection, delay=30):
+    def __init__(self, connection=None, delay=30):
         self.delay = delay
         self.allowed_chans = ['G', 'D']
         self.ts_last_sent = {}

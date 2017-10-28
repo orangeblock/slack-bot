@@ -10,7 +10,7 @@ FORGET_REGEX = re.compile(r'^!forget')
 HELP_REGEX = re.compile(r'^!teach\s+help')
 
 class PupilBot(BaseBot):
-    def __init__(self, connection, max_capacity=10):
+    def __init__(self, connection=None, max_capacity=10):
         self.qa = []
         self.max_capacity = max_capacity
         super(PupilBot, self).__init__(connection)
@@ -26,6 +26,13 @@ class PupilBot(BaseBot):
                self.learn(message) or \
                self.answer(message) or \
                self.forget(message)
+
+    def _get_mention_string(self):
+        return '<@%s>' % self.connection.bot_id
+
+    def _mentioned(self, text):
+        # TODO: This only works for Slack. Move to connection level.
+        return self._get_mention_string() in text
 
     def _find_answer(self, question):
         storable_question = self._get_storable_question(question)

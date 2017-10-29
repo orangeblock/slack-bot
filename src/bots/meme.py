@@ -44,11 +44,11 @@ class MemeBot(BaseBot):
             return False
         if re.match(MEME_REGEX, message.text):
             if message.channel and message.channel[0] == 'G' and self._is_too_soon(message.channel):
-                self.connection.send_message('You have to wait %d seconds :simple_smile:' % self.delay, message.channel)
+                self.connection.send_message('You have to wait %d seconds (:' % self.delay, message.channel)
                 return True
             meme_url = random_meme()
             if not meme_url:
-                response = 'Something went wrong :disappointed:'
+                response = 'Something went wrong :('
             else:
                 response = meme_url
             self.connection.send_message(response, message.channel)

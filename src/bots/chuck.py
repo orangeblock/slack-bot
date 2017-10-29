@@ -27,9 +27,9 @@ class ChuckBot(BaseBot):
         if re.match(CHUCK_REGEX, message.text):
             fact = random_chuck_fact()
             if not fact:
-                response = "Can't find any facts :feelbad:"
+                response = "Can't find any facts :("
             else:
-                response = fact 
+                response = fact
             self.connection.send_message(response, message.channel)
             return True
         return False

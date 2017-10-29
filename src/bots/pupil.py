@@ -55,14 +55,14 @@ class PupilBot(BaseBot):
         if match:
             question, answer = match.groups()
             if self._find_answer(question):
-                self.connection.send_message("I can already respond to that! :feelgood:", message.channel)
+                self.connection.send_message("I can already respond to that!", message.channel)
                 return True
             response = ''
             if len(self.qa) >= self.max_capacity:
                 del self.qa[0]
                 response += "I can't remember more things, so I forgot the oldest one.\n"
             self.qa.append((self._get_storable_question(question), answer))
-            response += 'Got it! I will now respond to "%s" with "%s"! :ok_hand:' % (question, answer)
+            response += 'Got it! I will now respond to "%s" with "%s"!' % (question, answer)
             self.connection.send_message(response, message.channel)
             return True
         return False

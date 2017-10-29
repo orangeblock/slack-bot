@@ -4,8 +4,7 @@ import time
 import logging
 import threading
 
-from connections import slack
-from connections.socketio import SocketIOConnection as sio
+from connections import SlackConnection, SocketIOConnection
 
 logger = logging.getLogger(__name__)
 
@@ -40,8 +39,8 @@ if __name__ == '__main__':
         threading.Thread(
             target=run_connection,
             args=(
-                slack.SlackConnection(slack_token),
-                [bots.PupilBot, bots.ChuckBot, bots.MemeBot])),
+                SlackConnection(slack_token),
+                [bots.PupilBot, bots.ChuckBot, bots.MemeBot, bots.UrbanBot, bots.YoutubeBot])),
     ]
     [t.start() for t in threads]
     [t.join() for t in threads]

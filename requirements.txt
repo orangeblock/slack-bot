@@ -1,4 +1,4 @@
 websocket-client==0.40.0
-requests==2.13.0
+requests>=2.13.0
 socketIO-client==0.7.2
 lxml==3.6.0

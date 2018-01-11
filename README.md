@@ -41,4 +41,6 @@ If you have Docker installed you can also use the Dockerfile in this directory t
 ## Usage
 Look into `src/bots/` for existing bot implementations. You can easily build your own and hook it up in `src/app.py` to make your bot respond to a different command.
 
+Invite the bot in a channel or a group discussion, or send messages directly to it in a PM. It will pick up all sent messages and pass them through all bot handlers. Only one bot can respond to a message, so keep that in mind when you order the bots in app.py.
+
 This project was made just for fun and you can use and extend it freely.
